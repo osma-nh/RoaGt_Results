@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Algorithm Viewer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+
+        .experiment-selector {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .experiment-selector label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        select.form-select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        select.form-select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .control-panel {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        #controlPanel {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-top: none;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+
+        .animation-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .animation-controls button {
+            padding: 10px 24px;
+            border: 1px solid #007bff;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .animation-controls button:hover {
+            background: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .animation-controls button:disabled {
+            background: #6c757d;
+            border-color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .animation-controls button.find-diff {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .animation-controls button.find-diff:hover {
+            background: #c82333;
+            border-color: #bd2130;
+        }
+
+        .step-info {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 600;
+            margin: 0 20px;
+        }
+
+        .grids-container {
+            margin-bottom: 20px;
+        }
+
+        .algorithm-grid {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border: 2px solid #ddd;
+            text-align: center;
+        }
+
+        .algorithm-grid.different {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .algorithm-grid h3 {
+            font-size: 1.1rem;
+            color: #007bff;
+            margin: 0 0 10px 0;
+        }
+
+        .grid-canvas {
+            border: 3px solid black;
+            margin: 10px auto;
+            background: #f8f9fa;
+            display: block;
+        }
+
+        .no-selection {
+            background: white;
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .no-selection h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .filter-toggle-link {
+            color: #007bff;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .filter-toggle-link:hover {
+            color: #0056b3;
+        }
+
+        .filter-section {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .filter-section.visible {
+            display: block;
+        }
+
+        .filter-grid-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .filter-grid-option {
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .filter-grid-option:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+        }
+
+        .filter-grid-option.selected {
+            border-color: #28a745;
+            background: #d4edda;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .all-option {
+            background: #e7f3ff;
+            font-weight: 600;
+            padding: 30px 10px;
+        }
+
+        .all-option.selected {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .mini-grid-canvas {
+            border: 2px solid #333;
+            margin: 5px auto;
+            background: #f8f9fa;
+            display: block;
+        }
+
+        .filter-grid-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .algo-filter-container {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            background: white;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 5px;
+        }
+
+        .algo-checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            margin: 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: #f8f9fa;
+            transition: all 0.2s;
+        }
+
+        .algo-checkbox-item:hover {
+            background: #e7f3ff;
+            border-color: #007bff;
+        }
+
+        .algo-checkbox-item input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .algo-checkbox-item label {
+            cursor: pointer;
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+
+        .algo-filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .algo-filter-buttons button {
+            padding: 5px 15px;
+            border: 1px solid #007bff;
+            background: white;
+            color: #007bff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .algo-filter-buttons button:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        .pagination-container {
+            background: white;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination-controls button {
+            padding: 6px 12px;
+            border: 1px solid #d0d0d0;
+            background: white;
+            color: #333;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .pagination-controls button:hover:not(:disabled) {
+            background: #f5f5f5;
+            border-color: #999;
+        }
+        
+        .pagination-controls button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .page-info {
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+            padding: 0 12px;
+        }
+        
+        .page-jump {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .page-jump input {
+            width: 70px;
+            padding: 6px 8px;
+            border: 1px solid #d0d0d0;
+            border-radius: 3px;
+            font-size: 13px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Multi-Algorithm Execution Viewer: <span id="algoCount">...</span></h1>
+            <p style="color: #666; margin: 0;">View and compare execution of all algorithms for a single experiment</p>
+        </div>
+
+        <!-- Experiment Selector -->
+        <div class="experiment-selector">
+            <label for="experimentSelect">Select Experiment</label>
+            <select id="experimentSelect" class="form-select">
+                <option value="">-- Select an Experiment --</option>
+            </select>
+            
+            <!-- Filter Toggle Links -->
+            <div id="filterToggleContainer" style="display: none;">
+                <span id="filterToggleLink" class="filter-toggle-link" onclick="toggleFiltersMulti()">🔽 Refine experiment selection</span>
+                <span> | </span>
+                <span id="algoFilterToggleLink" class="filter-toggle-link" onclick="toggleAlgoFilter()">🔽 Show algorithm filters</span>
+            </div>
+            
+            <!-- Experiment Filter Section -->
+            <div id="filterSection" class="filter-section">
+                <label>Filter by Initial Positions</label>
+                <div id="initialPosGridList" class="filter-grid-list">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <label style="margin-top: 15px;">Filter by Grid Config</label>
+                <select id="gridConfigFilter" class="form-select">
+                    <!-- Will be populated by JavaScript -->
+                </select>
+            </div>
+            
+            <!-- Algorithm Filter Section -->
+            <div id="algoFilterSection" class="filter-section">
+                <label>Filter by Algorithms</label>
+                <div class="algo-filter-buttons">
+                    <button onclick="selectAllAlgos()">Select All</button>
+                    <button onclick="unselectAllAlgos()">Unselect All</button>
+                </div>
+                <div id="algoFilterList" class="algo-filter-container">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Experiment Info -->
+        <div id="experimentInfo" class="control-panel" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div id="experimentInfoContent" style="font-family: monospace; font-size: 0.9rem; color: #333; line-height: 1.8; flex: 1;"></div>
+                <button onclick="showStepsInfo()" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; margin-left: 15px; white-space: nowrap;" title="View detailed steps information">📊 View Steps</button>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div id="controlPanel" class="control-panel" style="display: none;">
+            <div class="animation-controls">
+                <button onclick="playAnimation()">▶ Play</button>
+                <button onclick="pauseAnimation()">⏸ Pause</button>
+                <button onclick="prevStep()">◀ Prev</button>
+                <button onclick="nextStep()">▶ Next</button>
+                <button onclick="resetAnimation()">⟲ Reset</button>
+                <button class="find-diff" onclick="findNextDifference()">🔍 Find Next Difference</button>
+                <span class="step-info" id="stepInfo">Step: 0 / 0</span>
+                <label style="margin-left: 10px;">
+                    Jump to step: 
+                    <input type="number" id="stepInput" min="0" max="0" value="0" style="width: 70px; padding: 5px;" oninput="jumpToStep()" />
+                </label>
+            </div>
+        </div>
+
+        <!-- Algorithm Pagination -->
+        <div id="algoPaginationTop" class="pagination-container" style="display: none;">
+            <div class="pagination-controls">
+                <button id="firstAlgoBtn" onclick="goToAlgoPage(1)">⏮️ First</button>
+                <button id="prevAlgoBtn" onclick="goToAlgoPage(currentAlgoPage - 1)">⬅️ Previous</button>
+                <span class="page-info" id="algoPageInfo"></span>
+                <button id="nextAlgoBtn" onclick="goToAlgoPage(currentAlgoPage + 1)">Next ➡️</button>
+                <button id="lastAlgoBtn" onclick="goToAlgoPage(totalAlgoPages)">Last ⏭️</button>
+                <div class="page-jump">
+                    <span style="font-size: 13px;">Go to:</span>
+                    <input type="number" id="algoPageJumpInput" min="1" placeholder="Page" onkeypress="if(event.key==='Enter') jumpToAlgoPage()">
+                    <button onclick="jumpToAlgoPage()">Go</button>
+                </div>
+                <div class="page-jump" style="margin-left: 16px;">
+                    <span style="font-size: 13px;">Per page:</span>
+                    <select id="algosPerPageSelect" onchange="changeAlgosPerPage(this)" style="padding: 6px 8px; border: 1px solid #d0d0d0; border-radius: 3px; font-size: 13px;">
+                        <option value="20">20</option>
+                        <option value="40" selected>40</option>
+                        <option value="60">60</option>
+                        <option value="80">80</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grids Container -->
+        <div id="gridsContainer" class="grids-container row" style="display: none;">
+            <!-- Will be populated by JavaScript -->
+        </div>
+
+        <!-- Algorithm Pagination Bottom -->
+        <div id="algoPaginationBottom" class="pagination-container" style="display: none;">
+            <div class="pagination-controls">
+                <button onclick="goToAlgoPage(1)">⏮️ First</button>
+                <button onclick="goToAlgoPage(currentAlgoPage - 1)">⬅️ Previous</button>
+                <span class="page-info" id="algoPageInfo2"></span>
+                <button onclick="goToAlgoPage(currentAlgoPage + 1)">Next ➡️</button>
+                <button onclick="goToAlgoPage(totalAlgoPages)">Last ⏭️</button>
+                <div class="page-jump">
+                    <span style="font-size: 13px;">Go to:</span>
+                    <input type="number" id="algoPageJumpInput2" min="1" placeholder="Page" onkeypress="if(event.key==='Enter') jumpToAlgoPage2()">
+                    <button onclick="jumpToAlgoPage2()">Go</button>
+                </div>
+                <div class="page-jump" style="margin-left: 16px;">
+                    <span style="font-size: 13px;">Per page:</span>
+                    <select id="algosPerPageSelect2" onchange="changeAlgosPerPage(this)" style="padding: 6px 8px; border: 1px solid #d0d0d0; border-radius: 3px; font-size: 13px;">
+                    <option value="20">20</option>
+                    <option value="40" selected>40</option>
+                    <option value="60">60</option>
+                    <option value="80">80</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="noSelection" class="no-selection">
+            <h3>Select an Experiment</h3>
+            <p>Choose an experiment from the list above to view execution across all algorithms</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="multiview_core_data/common_data.min.js"></script>
+    <script>
+        // Global simulation configuration
+        const simConfig = {
+            colors: {
+                L: '#ff0000'
+            },
+            boundaryColor: '#666',
+            boundaryWidth: 2,
+            robotRadius: 8,
+            wallColor: '#000000',
+            wallWidth: 4
+        };
+        
+        let currentExperimentIndex = -1;
+        let currentStep = 0;
+        let maxSteps = 0;
+        let playInterval = null;
+        let parsedExperiments = [];
+        let selectedInitialPosFilter = '';
+        let selectedGridConfigFilter = '';
+        let selectedAlgos = new Set(); // Track selected algorithms
+        
+        let ALGOS_PER_PAGE = 40;
+        let currentAlgoPage = 1;
+        let totalAlgoPages = 1;
+        let filteredExperiments = []; // Store filtered experiments for pagination
+
+        // Chunk loading infrastructure
+        const CHUNK_SIZE = window.commonData ? (window.commonData.chunkSize || 200) : 200;
+        let chunkCache = {};            // chunkIdx → array of parsed algo objects
+        let currentExpGridInfo = null;  // Grid info for current experiment
+        let allAlgosSorted = [];        // All algo names sorted (from commonData)
+        let algoNameToSortedIdx = {};  // name → global sorted index
+
+        // Natural sort function for algorithm names
+        function naturalSort(a, b) {
+            const ax = [];
+            const bx = [];
+            
+            a.replace(/(\d+)|(\D+)/g, (_, num, str) => {
+                ax.push([num || Infinity, str || '']);
+            });
+            b.replace(/(\d+)|(\D+)/g, (_, num, str) => {
+                bx.push([num || Infinity, str || '']);
+            });
+            
+            while (ax.length && bx.length) {
+                const an = ax.shift();
+                const bn = bx.shift();
+                const nn = (an[0] - bn[0]) || an[1].localeCompare(bn[1]);
+                if (nn) return nn;
+            }
+            
+            return ax.length - bx.length;
+        }
+
+        // Draw grid on canvas
+        function drawGrid(canvas, gridData, stepIndex, algoIndex) {
+            if (!gridData || !gridData.steps) return;
+            
+            const ctx = canvas.getContext('2d');
+            const { minX, maxX, minY, maxY, obstacleX, obstacleY, steps } = gridData;
+            
+            const isLastStateRepeated = stepIndex >= steps.length;
+            const actualStepIndex = isLastStateRepeated ? steps.length - 1 : stepIndex;
+            
+            const FRAME_SCALE = 25;
+            const PADDING = 2;  // Minimal padding - very tight fit
+            
+            const gridWidth = maxX - minX ;
+            const gridHeight = maxY - minY ;
+            const canvasWidth = gridWidth * FRAME_SCALE + 2 * PADDING;
+            const canvasHeight = gridHeight * FRAME_SCALE + 2 * PADDING;
+            
+            // Set canvas dimensions
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            function frameWorldToCanvas(x, y) {
+                return {
+                    cx: PADDING + (x - minX) * FRAME_SCALE,
+                    cy: canvasHeight - PADDING - (y - minY) * FRAME_SCALE
+                };
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid lines
+            ctx.strokeStyle = '#e8e8e8';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([]);
+            
+            for (let x = minX; x <= maxX; x++) {
+                const { cx } = frameWorldToCanvas(x, minY);
+                const { cy: cy_top } = frameWorldToCanvas(x, maxY);
+                const { cy: cy_bottom } = frameWorldToCanvas(x, minY);
+                ctx.beginPath();
+                ctx.moveTo(cx + 0.5, cy_top);
+                ctx.lineTo(cx + 0.5, cy_bottom);
+                ctx.stroke();
+            }
+            
+            for (let y = minY; y <= maxY; y++) {
+                const { cx: cx_left } = frameWorldToCanvas(minX, y);
+                const { cx: cx_right } = frameWorldToCanvas(maxX, y);
+                const { cy } = frameWorldToCanvas(minX, y);
+                ctx.beginPath();
+                ctx.moveTo(cx_left, cy + 0.5);
+                ctx.lineTo(cx_right, cy + 0.5);
+                ctx.stroke();
+            }
+            
+            // Draw boundaries
+            ctx.strokeStyle = simConfig.boundaryColor;
+            ctx.lineWidth = simConfig.boundaryWidth;
+            ctx.setLineDash([5, 3]);
+            
+            const { cx: x0 } = frameWorldToCanvas(minX, minY);
+            const { cy: y0 } = frameWorldToCanvas(minX, minY);
+            const { cx: x1 } = frameWorldToCanvas(maxX, maxY);
+            const { cy: y1 } = frameWorldToCanvas(maxX, maxY);
+            
+            ctx.strokeRect(x0, y1, x1 - x0, y0 - y1);
+            ctx.setLineDash([]);
+            
+            // Draw robots
+            const currentStep = steps[actualStepIndex];
+            if (currentStep) {
+                currentStep.forEach(robot => {
+                    const { cx, cy } = frameWorldToCanvas(robot.x, robot.y);
+                    const isInBounds = robot.x >= minX && robot.x <= maxX && 
+                                       robot.y >= minY && robot.y <= maxY;
+                    
+                    ctx.fillStyle = simConfig.colors[robot.c] || 'gray';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, simConfig.robotRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = isInBounds ? '#333' : '#e53935';
+                    ctx.lineWidth = isInBounds ? 1.5 : 2;
+                    ctx.stroke();
+                    
+                    // Draw character label
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 10px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(robot.c, cx, cy);
+                });
+            }
+            
+            // Draw X if beyond available steps
+            if (isLastStateRepeated) {
+                ctx.strokeStyle = '#e53935';
+                ctx.lineWidth = 4;
+                const xSize = 40;
+                const centerX = (x0 + x1) / 2;
+                const centerY = (y0 + y1) / 2;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX - xSize/2, centerY - xSize/2);
+                ctx.lineTo(centerX + xSize/2, centerY + xSize/2);
+                ctx.moveTo(centerX + xSize/2, centerY - xSize/2);
+                ctx.lineTo(centerX - xSize/2, centerY + xSize/2);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#e53935';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Step Not Available', centerX, centerY + xSize/2 + 20);
+            }
+        }
+
+        // Populate experiment dropdown
+        function populateExperimentList() {
+            const experimentSelect = document.getElementById('experimentSelect');
+            experimentSelect.innerHTML = '<option value="">-- Select an Experiment --</option>';
+            
+            if (!window.commonData || !window.commonData.experiments) return;
+            
+            let displayIndex = 0;
+            let firstMatchingIndex = -1;
+            
+            window.commonData.experiments.forEach((exp) => {
+                // Add to dropdown
+                const option = document.createElement('option');
+                option.value = exp[0];
+                option.textContent = `Experiment ${exp[0]}`;
+                experimentSelect.appendChild(option);
+            }); 
+            
+            // Add change event listener
+            experimentSelect.onchange = (e) => {
+                const index = parseInt(e.target.value);
+                if (!isNaN(index)) {
+                    selectExperiment(index);
+                } else {
+                    // Hide grids if no selection
+                    document.getElementById('noSelection').style.display = 'block';
+                    document.getElementById('controlPanel').style.display = 'none';
+                    document.getElementById('gridsContainer').style.display = 'none';
+                    document.getElementById('experimentInfo').style.display = 'none';
+                    document.getElementById('filterToggleContainer').style.display = 'none';
+                }
+            };
+        }
+
+        // Find experiment based on selected filters
+        function findMatchingExperiment() {
+            if (!selectedInitialPosFilter || !selectedGridConfigFilter) return;
+            
+            if (!window.commonData || !window.commonData.experiments) return;
+            
+            // Find first matching experiment
+            const match = window.commonData.experiments.find(exp => 
+                exp[2] === selectedInitialPosFilter && 
+                exp[4] === selectedGridConfigFilter
+            );
+            
+            if (match) {
+                // Select this experiment
+                selectExperiment(match[0]);
+                
+                // Sync dropdown
+                const experimentSelect = document.getElementById('experimentSelect');
+                if (experimentSelect) {
+                    experimentSelect.value = match.id;
+                }
+            }
+        }
+
+        // Toggle experiment filter visibility
+        function toggleFiltersMulti() {
+            const filterSection = document.getElementById('filterSection');
+            const algoFilterSection = document.getElementById('algoFilterSection');
+            const toggleLink = document.getElementById('filterToggleLink');
+            
+            if (filterSection.classList.contains('visible')) {
+                filterSection.classList.remove('visible');
+                toggleLink.textContent = '🔽 Refine experiment selection';
+            } else {
+                filterSection.classList.add('visible');
+                toggleLink.textContent = '🔼 Hide experiment selection';
+                // Close algorithm filter if open
+                if (algoFilterSection.classList.contains('visible')) {
+                    algoFilterSection.classList.remove('visible');
+                    document.getElementById('algoFilterToggleLink').textContent = '🔽 Show algorithm filters';
+                }
+            }
+        }
+
+        // Toggle algorithm filter visibility
+        function toggleAlgoFilter() {
+            const filterSection = document.getElementById('filterSection');
+            const algoFilterSection = document.getElementById('algoFilterSection');
+            const toggleLink = document.getElementById('algoFilterToggleLink');
+            
+            if (algoFilterSection.classList.contains('visible')) {
+                algoFilterSection.classList.remove('visible');
+                toggleLink.textContent = '🔽 Show algorithm filters';
+            } else {
+                algoFilterSection.classList.add('visible');
+                toggleLink.textContent = '🔼 Hide algorithm filters';
+                // Close experiment filter if open
+                if (filterSection.classList.contains('visible')) {
+                    filterSection.classList.remove('visible');
+                    document.getElementById('filterToggleLink').textContent = '🔽 Refine experiment selection';
+                }
+            }
+        }
+
+        // Populate filters based on common data
+        function populateFiltersMulti() {
+            if (!window.commonData || !window.commonData.experiments) return;
+            
+            // Update algorithm count in header (use pre-computed value)
+            const total = window.commonData.algorithmCount || (window.commonData.algorithms ? window.commonData.algorithms.length : 0);
+            const validated = window.commonData.validatedCount;
+            if (validated !== undefined && validated < total) {
+                document.getElementById('algoCount').textContent = `${validated} validated / ${total} total algorithms`;
+            } else {
+                document.getElementById('algoCount').textContent = `${total} algorithms`;
+            }
+            
+            // Populate algorithm filter checkboxes
+            const algoFilterList = document.getElementById('algoFilterList');
+            if (algoFilterList && window.commonData.algorithms) {
+                algoFilterList.innerHTML = '';
+                
+                // Get all algorithm names (already sorted from backend)
+                const algoNames = window.commonData.algorithms.map(a => a[0]);
+                
+                // Initialize selectedAlgos with all algorithms if empty
+                if (selectedAlgos.size === 0) {
+                    algoNames.forEach(name => selectedAlgos.add(name));
+                }
+                
+                algoNames.forEach(algoName => {
+                    const checkboxDiv = document.createElement('div');
+                    checkboxDiv.className = 'algo-checkbox-item';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `algo_${algoName}`;
+                    checkbox.value = algoName;
+                    checkbox.checked = selectedAlgos.has(algoName);
+                    checkbox.onchange = (e) => {
+                        if (e.target.checked) {
+                            selectedAlgos.add(algoName);
+                        } else {
+                            selectedAlgos.delete(algoName);
+                        }
+                        // Refresh the grids display if an experiment is selected
+                        if (currentExperimentIndex !== -1) {
+                            updateGridsDisplay();
+                        }
+                    };
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `algo_${algoName}`;
+                    label.textContent = algoName;
+                    
+                    checkboxDiv.appendChild(checkbox);
+                    checkboxDiv.appendChild(label);
+                    algoFilterList.appendChild(checkboxDiv);
+                });
+            }
+            
+            // Collect unique initial positions with their grid info
+            const initialPositionsMap = new Map(); // initPos -> gridInfo
+            const gridConfigsSet = new Set();
+            
+            window.commonData.experiments.forEach(exp => {
+                if (!initialPositionsMap.has(exp[2])) {
+                    initialPositionsMap.set(exp[2], exp[1]);
+                }
+                gridConfigsSet.add(exp[4]);
+            });
+            
+            // Populate initial positions grid
+            const initialPosGridList = document.getElementById('initialPosGridList');
+            initialPosGridList.innerHTML = '';
+            
+            // Add visual grid for each unique initial position
+            let posIndex = 0;
+            Array.from(initialPositionsMap.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([initPos, gridInfo]) => {
+                const gridOption = document.createElement('div');
+                gridOption.className = 'filter-grid-option' + (selectedInitialPosFilter === initPos ? ' selected' : '');
+                
+                const canvasId = `miniCanvas_${posIndex}`;
+                gridOption.innerHTML = `
+                    <canvas id="${canvasId}" class="mini-grid-canvas" width="120" height="120"></canvas>
+                    <div class="filter-grid-label">Config ${posIndex + 1}</div>
+                `;
+                gridOption.onclick = () => {
+                    selectedInitialPosFilter = initPos;
+                    populateFiltersMulti(); // Refresh UI selection
+                    populateExperimentList(); // Filter list
+                    findMatchingExperiment(); // Auto-select match
+                };
+                initialPosGridList.appendChild(gridOption);
+                
+                // Draw mini grid with wall information
+                setTimeout(() => {
+                    const canvas = document.getElementById(canvasId);
+                    if (canvas) drawMiniGrid(canvas, initPos, gridInfo);
+                }, 10);
+                
+                posIndex++;
+            });
+            
+            // Populate grid config filter
+            const gridConfigFilter = document.getElementById('gridConfigFilter');
+            gridConfigFilter.innerHTML = '';
+            
+            const sortedGridConfigs = Array.from(gridConfigsSet).sort();
+            if (!selectedGridConfigFilter && sortedGridConfigs.length > 0) {
+                selectedGridConfigFilter = sortedGridConfigs[0];
+            }
+            
+            sortedGridConfigs.forEach(gridConfig => {
+                const option = document.createElement('option');
+                option.value = gridConfig;
+                option.textContent = gridConfig;
+                if (selectedGridConfigFilter === gridConfig) {
+                    option.selected = true;
+                }
+                gridConfigFilter.appendChild(option);
+            });
+            
+            // Add event listener for grid config filter
+            gridConfigFilter.onchange = () => {
+                selectedGridConfigFilter = gridConfigFilter.value;
+                populateExperimentList();
+                findMatchingExperiment(); // Auto-select match
+            };
+        }
+
+        // Draw mini grid for initial position visualization
+        function drawMiniGrid(canvas, initPosStr, gridInfoStr) {
+            const ctx = canvas.getContext('2d');
+            const FRAME_SCALE = 20;
+            const FRAME_THICKNESS = 3;
+            const FRAME_PADDING = 1;
+            
+            // Parse grid info to get wall positions (absolute on grid)
+            const gridPart = gridInfoStr.replace('GRID:', '');
+            const gridValues = gridPart.split(',');
+            const gridObsX = parseInt(gridValues[6]);
+            const gridObsY = parseInt(gridValues[7]);
+            
+            // Parse wall tag from initPosStr, e.g. [wx:1,wy:3] or [wx:1] or [wy:-1]
+            let wallTagX = null, wallTagY = null;
+            const wxMatch = initPosStr.match(/\[.*?wx:(-?\d+)/);
+            const wyMatch = initPosStr.match(/wy:(-?\d+)/);
+            if (wxMatch) wallTagX = parseInt(wxMatch[1]);
+            if (wyMatch) wallTagY = parseInt(wyMatch[1]);
+            
+            // Parse initial positions (now relative to first robot at 0,0)
+            const positions = [];
+            const matches = initPosStr.matchAll(/[(]([^,]+),([^,]+),([^)]+)[)]/g);
+            for (const match of matches) {
+                positions.push({
+                    c: match[1],
+                    x: parseInt(match[2]),
+                    y: parseInt(match[3])
+                });
+            }
+            
+            if (positions.length === 0) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Find minimal bounds from robot positions only
+            let minX = positions[0].x;
+            let maxX = positions[0].x;
+            let minY = positions[0].y;
+            let maxY = positions[0].y;
+            
+            positions.forEach(pos => {
+                minX = Math.min(minX, pos.x);
+                maxX = Math.max(maxX, pos.x);
+                minY = Math.min(minY, pos.y);
+                maxY = Math.max(maxY, pos.y);
+            });
+            
+            // Include wall in bounds if it exists
+            // Wall tag values are now relative to first robot (same frame as positions)
+            if (wallTagX !== null) {
+                minX = Math.min(minX, wallTagX);
+                maxX = Math.max(maxX, wallTagX);
+            }
+            if (wallTagY !== null) {
+                minY = Math.min(minY, wallTagY);
+                maxY = Math.max(maxY, wallTagY);
+            }
+            
+            // Extend bounds slightly for padding
+            const frameMinX = minX - FRAME_PADDING;
+            const frameMaxX = maxX + FRAME_PADDING;
+            const frameMinY = minY - FRAME_PADDING;
+            const frameMaxY = maxY + FRAME_PADDING;
+            
+            const frameGridWidth = frameMaxX - frameMinX;
+            const frameGridHeight = frameMaxY - frameMinY;
+            const framePixelWidth = frameGridWidth * FRAME_SCALE;
+            const framePixelHeight = frameGridHeight * FRAME_SCALE;
+            
+            const frameX = (canvas.width - framePixelWidth) / 2;
+            const frameY = (canvas.height - framePixelHeight) / 2;
+            
+            function toCanvas(x, y) {
+                return {
+                    cx: frameX + (x - frameMinX) * FRAME_SCALE,
+                    cy: frameY + framePixelHeight - (y - frameMinY) * FRAME_SCALE
+                };
+            }
+            
+            // Draw grid lines
+            ctx.strokeStyle = '#e8e8e8';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([]);
+            
+            for (let x = frameMinX; x <= frameMaxX; x++) {
+                const { cx } = toCanvas(x, frameMinY);
+                const { cy: cy_top } = toCanvas(x, frameMaxY);
+                const { cy: cy_bottom } = toCanvas(x, frameMinY);
+                ctx.beginPath();
+                ctx.moveTo(cx + 0.5, cy_top);
+                ctx.lineTo(cx + 0.5, cy_bottom);
+                ctx.stroke();
+            }
+            
+            for (let y = frameMinY; y <= frameMaxY; y++) {
+                const { cx: cx_left } = toCanvas(frameMinX, y);
+                const { cx: cx_right } = toCanvas(frameMaxX, y);
+                const { cy } = toCanvas(frameMinX, y);
+                ctx.beginPath();
+                ctx.moveTo(cx_left, cy + 0.5);
+                ctx.lineTo(cx_right, cy + 0.5);
+                ctx.stroke();
+            }
+            
+            // Draw frame border
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = FRAME_THICKNESS;
+            ctx.setLineDash([]);
+            ctx.strokeRect(frameX, frameY, framePixelWidth, framePixelHeight);
+            
+            // Draw walls as thick red dashed lines
+            if (wallTagX !== null) {
+                // Vertical wall
+                const { cx } = toCanvas(wallTagX, frameMinY);
+                const { cy: cy_top } = toCanvas(wallTagX, frameMaxY);
+                const { cy: cy_bottom } = toCanvas(wallTagX, frameMinY);
+                ctx.strokeStyle = simConfig.wallColor;
+                ctx.lineWidth = simConfig.wallWidth;
+                ctx.setLineDash([5, 3]);
+                ctx.beginPath();
+                ctx.moveTo(cx, cy_top);
+                ctx.lineTo(cx, cy_bottom);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            if (wallTagY !== null) {
+                // Horizontal wall
+                const { cx: cx_left } = toCanvas(frameMinX, wallTagY);
+                const { cx: cx_right } = toCanvas(frameMaxX, wallTagY);
+                const { cy } = toCanvas(frameMinX, wallTagY);
+                ctx.strokeStyle = simConfig.wallColor;
+                ctx.lineWidth = simConfig.wallWidth;
+                ctx.setLineDash([5, 3]);
+                ctx.beginPath();
+                ctx.moveTo(cx_left, cy);
+                ctx.lineTo(cx_right, cy);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // Draw robots
+            positions.forEach(robot => {
+                const { cx, cy } = toCanvas(robot.x, robot.y);
+                ctx.fillStyle = simConfig.colors[robot.c] || 'gray';
+                ctx.beginPath();
+                ctx.arc(cx, cy, simConfig.robotRadius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // Draw character label
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 8px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(robot.c, cx, cy);
+            });
+        }
+
+        // Select experiment
+        function selectExperiment(index) {
+            currentExperimentIndex = index;
+            currentStep = 0;
+            chunkCache = {};
+            loadedAlgorithms.clear();
+            
+            // Sync filters with this experiment
+            if (window.commonData && window.commonData.experiments) {
+                const exp = window.commonData.experiments.find(e => e[0] === index);
+                if (exp) {
+                    selectedInitialPosFilter = exp[2];
+                    selectedGridConfigFilter = exp[4];
+                    
+                    // Update UI
+                    populateFiltersMulti();
+                    const gridConfigSelect = document.getElementById('gridConfigFilter');
+                    if (gridConfigSelect) {
+                        gridConfigSelect.value = selectedGridConfigFilter;
+                    }
+                    
+                    // Parse grid info from commonData
+                    const gridPart = exp[1].replace('GRID:', '');
+                    const gridValues = gridPart.split(',').map(Number);
+                    const [minX, maxX, minY, maxY] = gridValues;
+                    const columns = gridValues.length > 4 ? gridValues[4] : null;
+                    const rows = gridValues.length > 5 ? gridValues[5] : null;
+                    const obstacleX = gridValues.length > 6 ? gridValues[6] : null;
+                    const obstacleY = gridValues.length > 7 ? gridValues[7] : null;
+                    
+                    currentExpGridInfo = {
+                        minX, maxX, minY, maxY, columns, rows, obstacleX, obstacleY,
+                        initialPositions: exp[2],
+                        gridConfigSig: exp[4]
+                    };
+                    
+                    // maxSteps from pre-computed value (exp[5])
+                    maxSteps = exp[5] || 0;
+                    
+                    // Update experiment info display
+                    document.getElementById('experimentInfoContent').innerHTML = `
+                        <strong>Grid:</strong> x[${minX}, ${maxX}] y[${minY}, ${maxY}] | 
+                        <strong>Columns:</strong> ${columns !== null ? columns : '?'}, 
+                        <strong>Rows:</strong> ${rows !== null ? rows : '?'} | 
+                        <strong>Initial Position:</strong> ${exp[2]}
+                    `;
+                    document.getElementById('experimentInfo').style.display = 'block';
+                }
+            }
+            
+            // Update UI
+            document.getElementById('noSelection').style.display = 'none';
+            document.getElementById('controlPanel').style.display = 'block';
+            document.getElementById('gridsContainer').style.display = 'flex';
+            document.getElementById('filterToggleContainer').style.display = 'block';
+            
+            // Update step input
+            document.getElementById('stepInput').max = maxSteps - 1;
+            document.getElementById('stepInput').value = 0;
+            
+            // Display first page (will load required chunks)
+            currentAlgoPage = 1;
+            updateGridsDisplay();
+        }
+
+        // Load a single chunk file (stores raw data, parsing is lazy)
+        function loadChunk(chunkIdx, callback) {
+            if (chunkCache[chunkIdx]) {
+                if (callback) callback();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = `multiview_core_data/experiment_${currentExperimentIndex}_chunk_${chunkIdx}.min.js`;
+            script.onload = () => {
+                const varName = `experimentData_${currentExperimentIndex}_${chunkIdx}`;
+                const rawData = window[varName];
+                if (rawData) {
+                    // Store raw data + a sparse parsed cache (lazy)
+                    chunkCache[chunkIdx] = { raw: rawData, parsed: {} };
+                    delete window[varName];
+                }
+                if (callback) callback();
+            };
+            script.onerror = () => { if (callback) callback(); };
+            document.body.appendChild(script);
+        }
+
+        // Parse a single algorithm from raw chunk data (lazy, on demand)
+        // Compact format: rawAlgoExec = [name, status, compact_history, cycle_len]
+        // compact_history: "A,0,0,B,1,0;A,0,1,B,2,1" (no parens, groups of 3: color,x,y)
+        function parseSingleAlgo(rawAlgoExec) {
+            if (!currentExpGridInfo) return null;
+            const { minX, maxX, minY, maxY, columns, rows, obstacleX, obstacleY, initialPositions, gridConfigSig } = currentExpGridInfo;
+            
+            const historyPart = rawAlgoExec[2];
+            const steps = historyPart.split(';').map(step => {
+                const parts = step.split(',');
+                const robots = [];
+                for (let i = 0; i < parts.length; i += 3) {
+                    robots.push({ c: parts[i], x: parseInt(parts[i + 1]), y: parseInt(parts[i + 2]) });
+                }
+                return robots;
+            });
+            
+            return {
+                name: rawAlgoExec[0],
+                status: rawAlgoExec[1],
+                cycleLen: rawAlgoExec[3] || 0,
+                data: {
+                    minX, maxX, minY, maxY, columns, rows, obstacleX, obstacleY,
+                    steps,
+                    initialPositions,
+                    gridConfigSig
+                }
+            };
+        }
+
+        // Get parsed data for an algorithm by name (lazy: parses only when first accessed)
+        function getAlgoParsedData(name) {
+            const idx = algoNameToSortedIdx[name];
+            if (idx === undefined) return null;
+            const chunkIdx = Math.floor(idx / CHUNK_SIZE);
+            const inChunkIdx = idx % CHUNK_SIZE;
+            const chunk = chunkCache[chunkIdx];
+            if (!chunk) return null;
+            // Check if already parsed
+            if (chunk.parsed[inChunkIdx]) return chunk.parsed[inChunkIdx];
+            // Parse on demand and cache
+            if (!chunk.raw || !chunk.raw[inChunkIdx]) return null;
+            chunk.parsed[inChunkIdx] = parseSingleAlgo(chunk.raw[inChunkIdx]);
+            return chunk.parsed[inChunkIdx];
+        }
+
+        // Track loaded algorithms for lazy loading
+        let loadedAlgorithms = new Set();
+        let intersectionObserver = null;
+        let lazyLoadThreshold = 0.1; // Load when 10% visible
+        
+        // Initialize intersection observer for lazy loading
+        function initIntersectionObserver() {
+            if (intersectionObserver) {
+                intersectionObserver.disconnect();
+            }
+            
+            intersectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const canvas = entry.target;
+                        const algoIdx = parseInt(canvas.id.replace('canvas_', ''));
+                        
+                        // Only load if not already loaded
+                        if (!loadedAlgorithms.has(algoIdx)) {
+                            loadAlgorithmGrid(algoIdx);
+                            loadedAlgorithms.add(algoIdx);
+                        }
+                        
+                        // Stop observing once loaded
+                        intersectionObserver.unobserve(canvas);
+                    }
+                });
+            }, {
+                root: null,
+                rootMargin: '200px', // Start loading 200px before element comes into view
+                threshold: lazyLoadThreshold
+            });
+        }
+        
+        // Load a single algorithm grid
+        function loadAlgorithmGrid(sortedIdx) {
+            const algoInfo = allAlgosSorted[sortedIdx];
+            if (!algoInfo) return;
+            const exp = getAlgoParsedData(algoInfo.name);
+            if (!exp || !exp.data) return;
+            
+            const canvas = document.getElementById(`canvas_${sortedIdx}`);
+            if (!canvas) return;
+            
+            // Draw the grid
+            drawGrid(canvas, exp.data, currentStep, sortedIdx);
+            
+            // Update step counters
+            const absoluteStepElem = document.getElementById(`absoluteStep_${sortedIdx}`);
+            if (absoluteStepElem) {
+                absoluteStepElem.textContent = currentStep;
+            }
+            
+            const cycleStepElem = document.getElementById(`cycleStep_${sortedIdx}`);
+            if (cycleStepElem && exp.cycleLen) {
+                const totalSteps = exp.data ? exp.data.steps.length : 0;
+                const cycleStartStep = totalSteps - exp.cycleLen;
+                const cycleRelativeStep = currentStep - cycleStartStep + 1;
+                cycleStepElem.textContent = cycleRelativeStep;
+                
+                if (cycleRelativeStep < 0) {
+                    cycleStepElem.style.color = '#0066cc';
+                } else {
+                    cycleStepElem.style.color = '#28a745';
+                    cycleStepElem.style.fontWeight = 'bold';
+                }
+            } else if (cycleStepElem) {
+                cycleStepElem.textContent = 'N/A';
+                cycleStepElem.style.color = '#999';
+            }
+        }
+        
+        // Update grids display based on selected algorithms filter with chunk loading
+        function updateGridsDisplay() {
+            const gridsContainer = document.getElementById('gridsContainer');
+            gridsContainer.innerHTML = '';
+            
+            // Free previous chunks — only keep what the new page needs
+            chunkCache = {};
+            
+            // Clear all difference highlighting from previous grids
+            document.querySelectorAll('.algorithm-grid.different').forEach(grid => {
+                grid.classList.remove('different');
+            });
+            
+            // Reset loaded algorithms set
+            loadedAlgorithms.clear();
+            
+            // Filter from allAlgosSorted by selected algorithms
+            filteredExperiments = selectedAlgos.size > 0
+                ? allAlgosSorted.filter(a => selectedAlgos.has(a.name))
+                : allAlgosSorted.slice();
+            
+            // Calculate pagination
+            totalAlgoPages = Math.ceil(filteredExperiments.length / ALGOS_PER_PAGE);
+            if (totalAlgoPages === 0) totalAlgoPages = 1;
+            
+            // Ensure current page is valid
+            if (currentAlgoPage > totalAlgoPages) currentAlgoPage = totalAlgoPages;
+            if (currentAlgoPage < 1) currentAlgoPage = 1;
+            
+            // Show/hide pagination controls
+            const showPagination = filteredExperiments.length > ALGOS_PER_PAGE;
+            document.getElementById('algoPaginationTop').style.display = showPagination ? 'block' : 'none';
+            document.getElementById('algoPaginationBottom').style.display = showPagination ? 'block' : 'none';
+            
+            // Update pagination info
+            updateAlgoPaginationControls();
+            
+            const colClass = 'col-xl-4 col-lg-6 col-md-6 col-sm-12';
+            
+            // Calculate range for current page
+            const startIdx = (currentAlgoPage - 1) * ALGOS_PER_PAGE;
+            const endIdx = Math.min(startIdx + ALGOS_PER_PAGE, filteredExperiments.length);
+            
+            // Determine which chunks are needed for this page
+            const neededChunks = new Set();
+            for (let i = startIdx; i < endIdx; i++) {
+                neededChunks.add(Math.floor(filteredExperiments[i].sortedIdx / CHUNK_SIZE));
+            }
+            
+            // Create placeholder elements for all algorithms on current page (fast, no data needed)
+            for (let i = startIdx; i < endIdx; i++) {
+                const algo = filteredExperiments[i];
+                const sortedIdx = algo.sortedIdx;
+                
+                const colDiv = document.createElement('div');
+                colDiv.className = colClass;
+                
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'algorithm-grid';
+                gridDiv.id = `algoGrid_${sortedIdx}`;
+                gridDiv.innerHTML = `
+                    <h3>${algo.name} <span style="font-size: 0.85rem; color: #666;">[${algo.status}]</span></h3>
+                    <canvas id="canvas_${sortedIdx}" class="grid-canvas" data-lazy="true"></canvas>
+                    <div style="font-size: 0.9rem; color: #333; margin-top: 8px; display: flex; justify-content: space-between; padding: 0 10px;">
+                        <span><strong>Step:</strong> <span id="absoluteStep_${sortedIdx}">0</span> / ${maxSteps - 1}</span>
+                        <span><strong>Cycle Step:</strong> <span id="cycleStep_${sortedIdx}">-</span> / 0</span>
+                    </div>
+                `;
+                
+                colDiv.appendChild(gridDiv);
+                gridsContainer.appendChild(colDiv);
+            }
+            
+            // Update step info
+            document.getElementById('stepInfo').textContent = `Step: ${currentStep} / ${maxSteps - 1}`;
+            document.getElementById('stepInput').value = currentStep;
+            
+            // Load missing chunks then draw
+            const missingChunks = [...neededChunks].filter(c => !chunkCache[c]);
+            if (missingChunks.length > 0) {
+                let loaded = 0;
+                missingChunks.forEach(c => {
+                    loadChunk(c, () => {
+                        loaded++;
+                        if (loaded === missingChunks.length) {
+                            drawCurrentPageAlgos(startIdx, endIdx);
+                        }
+                    });
+                });
+            } else {
+                drawCurrentPageAlgos(startIdx, endIdx);
+            }
+        }
+        
+        // Draw algorithms for the current page after chunks are loaded
+        function drawCurrentPageAlgos(startIdx, endIdx) {
+            for (let i = startIdx; i < endIdx; i++) {
+                const algo = filteredExperiments[i];
+                const sortedIdx = algo.sortedIdx;
+                if (!loadedAlgorithms.has(sortedIdx)) {
+                    loadAlgorithmGrid(sortedIdx);
+                    loadedAlgorithms.add(sortedIdx);
+                }
+                
+                // Update cycle info now that data is loaded
+                const exp = getAlgoParsedData(algo.name);
+                if (exp) {
+                    const cycleStepElem = document.getElementById(`cycleStep_${sortedIdx}`);
+                    const stepsSpan = document.getElementById(`absoluteStep_${sortedIdx}`);
+                    if (stepsSpan && stepsSpan.parentElement) {
+                        stepsSpan.parentElement.innerHTML = `<strong>Step:</strong> <span id="absoluteStep_${sortedIdx}">${currentStep}</span> / ${exp.data ? exp.data.steps.length - 1 : 0}`;
+                    }
+                    if (cycleStepElem && cycleStepElem.parentElement) {
+                        cycleStepElem.parentElement.innerHTML = `<strong>Cycle Step:</strong> <span id="cycleStep_${sortedIdx}">-</span> / ${exp.cycleLen || 0}`;
+                    }
+                }
+            }
+            
+            setTimeout(() => {
+                highlightDifferences();
+            }, 100);
+        }
+
+        // Update pagination controls
+        function updateAlgoPaginationControls() {
+            const totalFiltered = filteredExperiments.length;
+            const startIdx = (currentAlgoPage - 1) * ALGOS_PER_PAGE + 1;
+            const endIdx = Math.min(currentAlgoPage * ALGOS_PER_PAGE, totalFiltered);
+            
+            const pageInfo = `Page ${currentAlgoPage} of ${totalAlgoPages} (Showing ${startIdx}-${endIdx} of ${totalFiltered})`;
+            
+            const pageInfo1 = document.getElementById('algoPageInfo');
+            const pageInfo2 = document.getElementById('algoPageInfo2');
+            if (pageInfo1) pageInfo1.textContent = pageInfo;
+            if (pageInfo2) pageInfo2.textContent = pageInfo;
+            
+            // Update button states
+            const firstBtn = document.getElementById('firstAlgoBtn');
+            const prevBtn = document.getElementById('prevAlgoBtn');
+            const nextBtn = document.getElementById('nextAlgoBtn');
+            const lastBtn = document.getElementById('lastAlgoBtn');
+            
+            if (firstBtn) firstBtn.disabled = currentAlgoPage === 1;
+            if (prevBtn) prevBtn.disabled = currentAlgoPage === 1;
+            if (nextBtn) nextBtn.disabled = currentAlgoPage === totalAlgoPages;
+            if (lastBtn) lastBtn.disabled = currentAlgoPage === totalAlgoPages;
+            
+            // Update jump inputs
+            const jumpInput1 = document.getElementById('algoPageJumpInput');
+            const jumpInput2 = document.getElementById('algoPageJumpInput2');
+            if (jumpInput1) {
+                jumpInput1.max = totalAlgoPages;
+                jumpInput1.placeholder = `1-${totalAlgoPages}`;
+            }
+            if (jumpInput2) {
+                jumpInput2.max = totalAlgoPages;
+                jumpInput2.placeholder = `1-${totalAlgoPages}`;
+            }
+        }
+        
+        // Go to specific algorithm page
+        function goToAlgoPage(page) {
+            if (page < 1 || page > totalAlgoPages) return;
+            currentAlgoPage = page;
+            updateGridsDisplay();
+        }
+        
+        // Jump to algorithm page from input
+        function jumpToAlgoPage() {
+            const input = document.getElementById('algoPageJumpInput');
+            if (!input) return;
+            
+            const page = parseInt(input.value);
+            if (!isNaN(page) && page >= 1 && page <= totalAlgoPages) {
+                goToAlgoPage(page);
+                input.value = '';
+            }
+        }
+        
+        // Jump to algorithm page from input (second control)
+        function jumpToAlgoPage2() {
+            const input = document.getElementById('algoPageJumpInput2');
+            if (!input) return;
+            
+            const page = parseInt(input.value);
+            if (!isNaN(page) && page >= 1 && page <= totalAlgoPages) {
+                goToAlgoPage(page);
+                input.value = '';
+            }
+        }
+        
+        // Change algorithms per page (capped at 200 = chunk size)
+        function changeAlgosPerPage(changedSelect) {
+            const select1 = document.getElementById('algosPerPageSelect');
+            const select2 = document.getElementById('algosPerPageSelect2');
+            
+            // Get value from the dropdown that changed
+            let newValue = parseInt(changedSelect.value);
+            if (newValue > CHUNK_SIZE) newValue = CHUNK_SIZE;
+            
+            ALGOS_PER_PAGE = newValue;
+            currentAlgoPage = 1; // Reset to first page
+            
+            // Sync both dropdowns
+            if (select1) select1.value = ALGOS_PER_PAGE;
+            if (select2) select2.value = ALGOS_PER_PAGE;
+            
+            // Refresh display if an experiment is selected
+            if (currentExperimentIndex !== -1) {
+                updateGridsDisplay();
+            }
+        }
+        
+        // Show steps information in a popup window (only for loaded chunks)
+        function showStepsInfo() {
+            // Gather steps data from loaded chunks (use raw data to avoid expensive parsing)
+            const stepsData = [];
+            for (const chunkIdx in chunkCache) {
+                const chunk = chunkCache[chunkIdx];
+                if (!chunk || !chunk.raw) continue;
+                chunk.raw.forEach(rawAlgo => {
+                    // rawAlgo = [name, status, compact_history, cycleLen]
+                    const historyPart = rawAlgo[2] || '';
+                    const stepCount = historyPart ? historyPart.split(';').length - 1 : 0;
+                    stepsData.push({
+                        name: rawAlgo[0],
+                        steps: stepCount,
+                        cycleLen: rawAlgo[3] || 0
+                    });
+                });
+            }
+            
+            if (stepsData.length === 0) return;
+            
+            // Sort by name
+            stepsData.sort((a, b) => naturalSort(a.name, b.name));
+            
+            // Create HTML content
+            let htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Steps Information - Experiment ${currentExperimentIndex}</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                            padding: 20px;
+                            background: #f5f5f5;
+                        }
+                        h2 {
+                            color: #333;
+                            margin-bottom: 20px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            background: white;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        }
+                        th, td {
+                            padding: 12px;
+                            text-align: left;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        th {
+                            background: #007bff;
+                            color: white;
+                            font-weight: 600;
+                        }
+                        tr:hover {
+                            background: #f8f9fa;
+                        }
+                        .summary {
+                            background: white;
+                            padding: 15px;
+                            margin-bottom: 20px;
+                            border-radius: 6px;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        }
+                        .summary strong {
+                            color: #007bff;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h2>Steps Information - Experiment ${currentExperimentIndex}</h2>
+                    <div class="summary">
+                        <strong>Total Algorithms:</strong> ${stepsData.length}<br>
+                        <strong>Min Steps:</strong> ${Math.min(...stepsData.map(d => d.steps))}<br>
+                        <strong>Max Steps:</strong> ${Math.max(...stepsData.map(d => d.steps))}<br>
+                        <strong>Avg Steps:</strong> ${Math.round(stepsData.reduce((sum, d) => sum + d.steps, 0) / stepsData.length)}
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Algorithm Name</th>
+                                <th>Steps</th>
+                                <th>Cycle Length</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            stepsData.forEach((data, idx) => {
+                htmlContent += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${data.name}</td>
+                        <td>${data.steps}</td>
+                        <td>${data.cycleLen || 'N/A'}</td>
+                    </tr>
+                `;
+            });
+            
+            htmlContent += `
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+            
+            // Open in new window
+            const popup = window.open('', 'StepsInfo', 'width=800,height=600,scrollbars=yes,resizable=yes');
+            if (popup) {
+                popup.document.write(htmlContent);
+                popup.document.close();
+            }
+        }
+
+        // Select all algorithms
+        function selectAllAlgos() {
+            if (!window.commonData || !window.commonData.algorithms) return;
+            
+            selectedAlgos.clear();
+            window.commonData.algorithms.forEach(algo => selectedAlgos.add(algo[0]));
+            
+            // Update all checkboxes
+            document.querySelectorAll('.algo-checkbox-item input[type=\"checkbox\"]').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            
+            // Refresh display
+            if (currentExperimentIndex !== -1) {
+                updateGridsDisplay();
+            }
+        }
+
+        // Unselect all algorithms
+        function unselectAllAlgos() {
+            selectedAlgos.clear();
+            
+            // Update all checkboxes
+            document.querySelectorAll('.algo-checkbox-item input[type=\"checkbox\"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Refresh display
+            if (currentExperimentIndex !== -1) {
+                updateGridsDisplay();
+            }
+        }
+
+        // Draw all grids at current step (only for loaded algorithms)
+        function drawAllGrids() {
+            // Only redraw grids that have been loaded
+            loadedAlgorithms.forEach(sortedIdx => {
+                const algoInfo = allAlgosSorted[sortedIdx];
+                if (!algoInfo) return;
+                const exp = getAlgoParsedData(algoInfo.name);
+                if (!exp || !exp.data) return;
+                
+                const canvas = document.getElementById(`canvas_${sortedIdx}`);
+                if (canvas) {
+                    drawGrid(canvas, exp.data, currentStep, sortedIdx);
+                }
+                
+                // Update absolute step counter
+                const absoluteStepElem = document.getElementById(`absoluteStep_${sortedIdx}`);
+                if (absoluteStepElem) {
+                    absoluteStepElem.textContent = currentStep;
+                }
+                
+                // Update cycle step counter for this algorithm
+                const cycleStepElem = document.getElementById(`cycleStep_${sortedIdx}`);
+                if (cycleStepElem && exp.cycleLen) {
+                    const totalSteps = exp.data ? exp.data.steps.length : 0;
+                    const cycleStartStep = totalSteps - exp.cycleLen;
+                    const cycleRelativeStep = currentStep - cycleStartStep + 1;
+                    cycleStepElem.textContent = cycleRelativeStep;
+                    
+                    // Color code: negative (before cycle) in blue, positive (in cycle) in green
+                    if (cycleRelativeStep < 0) {
+                        cycleStepElem.style.color = '#0066cc';
+                    } else {
+                        cycleStepElem.style.color = '#28a745';
+                        cycleStepElem.style.fontWeight = 'bold';
+                    }
+                } else if (cycleStepElem) {
+                    cycleStepElem.textContent = 'N/A';
+                    cycleStepElem.style.color = '#999';
+                }
+            });
+            
+            // Update step info
+            document.getElementById('stepInfo').textContent = `Step: ${currentStep} / ${maxSteps - 1}`;
+            document.getElementById('stepInput').value = currentStep;
+            
+            // Highlight different grids
+            highlightDifferences();
+        }
+
+        // Check and highlight differences (only for loaded algorithms)
+        function highlightDifferences() {
+            if (loadedAlgorithms.size < 2) return;
+            
+            // Get current step for all loaded algorithms
+            const loadedSteps = [];
+            const loadedIndices = [];
+            
+            loadedAlgorithms.forEach(sortedIdx => {
+                const algoInfo = allAlgosSorted[sortedIdx];
+                if (!algoInfo) return;
+                const exp = getAlgoParsedData(algoInfo.name);
+                if (!exp || !exp.data) return;
+                
+                if (currentStep >= exp.data.steps.length) {
+                    loadedSteps.push(exp.data.steps.length > 0 ?
+                           exp.data.steps[exp.data.steps.length - 1] : []);
+                } else {
+                    loadedSteps.push(exp.data.steps[currentStep]);
+                }
+                loadedIndices.push(sortedIdx);
+            });
+            
+            if (loadedSteps.length < 2) return;
+            
+            // Compare each loaded algorithm with others
+            const isDifferent = new Map();
+            
+            for (let i = 0; i < loadedSteps.length; i++) {
+                for (let j = i + 1; j < loadedSteps.length; j++) {
+                    if (!stepsEqual(loadedSteps[i], loadedSteps[j])) {
+                        isDifferent.set(loadedIndices[i], true);
+                        isDifferent.set(loadedIndices[j], true);
+                    }
+                }
+            }
+            
+            // Apply highlighting only to loaded algorithms
+            loadedAlgorithms.forEach(algoIdx => {
+                const gridDiv = document.getElementById(`algoGrid_${algoIdx}`);
+                if (gridDiv) {
+                    gridDiv.classList.toggle('different', isDifferent.get(algoIdx) || false);
+                }
+            });
+        }
+
+        // Compare two steps
+        function stepsEqual(step1, step2) {
+            if (!step1 || !step2) return false;
+            if (step1.length !== step2.length) return false;
+            
+            const sorted1 = step1.slice().sort((a, b) => {
+                if (a.x !== b.x) return a.x - b.x;
+                if (a.y !== b.y) return a.y - b.y;
+                return a.c.localeCompare(b.c);
+            });
+            const sorted2 = step2.slice().sort((a, b) => {
+                if (a.x !== b.x) return a.x - b.x;
+                if (a.y !== b.y) return a.y - b.y;
+                return a.c.localeCompare(b.c);
+            });
+            
+            for (let i = 0; i < sorted1.length; i++) {
+                if (sorted1[i].x !== sorted2[i].x || 
+                    sorted1[i].y !== sorted2[i].y || 
+                    sorted1[i].c !== sorted2[i].c) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        // Animation controls
+        function playAnimation() {
+            if (playInterval) return;
+            playInterval = setInterval(() => {
+                currentStep = (currentStep + 1) % maxSteps;
+                drawAllGrids();
+            }, 500);
+        }
+
+        function pauseAnimation() {
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+        }
+
+        function nextStep() {
+            pauseAnimation();
+            currentStep = Math.min(currentStep + 1, maxSteps - 1);
+            drawAllGrids();
+        }
+
+        function prevStep() {
+            pauseAnimation();
+            currentStep = Math.max(currentStep - 1, 0);
+            drawAllGrids();
+        }
+
+        function resetAnimation() {
+            pauseAnimation();
+            currentStep = 0;
+            drawAllGrids();
+        }
+
+        function jumpToStep() {
+            pauseAnimation();
+            const targetStep = parseInt(document.getElementById('stepInput').value);
+            if (!isNaN(targetStep) && targetStep >= 0 && targetStep < maxSteps) {
+                currentStep = targetStep;
+                drawAllGrids();
+            }
+        }
+
+        function findNextDifference() {
+            pauseAnimation();
+            
+            // Ensure all algorithms on current page are loaded before searching
+            const startIdx = (currentAlgoPage - 1) * ALGOS_PER_PAGE;
+            const endIdx = Math.min(startIdx + ALGOS_PER_PAGE, filteredExperiments.length);
+            
+            // Load all algorithms on current page if not already loaded
+            for (let i = startIdx; i < endIdx; i++) {
+                const algo = filteredExperiments[i];
+                const sortedIdx = algo.sortedIdx;
+                if (!loadedAlgorithms.has(sortedIdx)) {
+                    loadAlgorithmGrid(sortedIdx);
+                    loadedAlgorithms.add(sortedIdx);
+                }
+            }
+            
+            // Only search through loaded algorithms
+            if (loadedAlgorithms.size < 2) {
+                alert('Need at least 2 loaded algorithms to find differences');
+                return;
+            }
+            
+            const startStep = currentStep + 1;
+            
+            // Get loaded algorithm indices
+            const loadedIndices = Array.from(loadedAlgorithms).sort((a, b) => a - b);
+            
+            // Helper to get step data for a sorted index
+            function getStepData(sortedIdx, step) {
+                const algoInfo = allAlgosSorted[sortedIdx];
+                if (!algoInfo) return [];
+                const exp = getAlgoParsedData(algoInfo.name);
+                if (!exp || !exp.data) return [];
+                if (step >= exp.data.steps.length) {
+                    return exp.data.steps.length > 0 ?
+                           exp.data.steps[exp.data.steps.length - 1] : [];
+                }
+                return exp.data.steps[step];
+            }
+            
+            // Search from current step to end
+            for (let step = startStep; step < maxSteps; step++) {
+                const stepsAtThisPoint = loadedIndices.map(idx => getStepData(idx, step));
+                
+                // Check if any two are different
+                for (let i = 0; i < stepsAtThisPoint.length; i++) {
+                    for (let j = i + 1; j < stepsAtThisPoint.length; j++) {
+                        if (!stepsEqual(stepsAtThisPoint[i], stepsAtThisPoint[j])) {
+                            currentStep = step;
+                            drawAllGrids();
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            // Wrap around to beginning
+            for (let step = 0; step < startStep - 1; step++) {
+                const stepsAtThisPoint = loadedIndices.map(idx => getStepData(idx, step));
+                
+                for (let i = 0; i < stepsAtThisPoint.length; i++) {
+                    for (let j = i + 1; j < stepsAtThisPoint.length; j++) {
+                        if (!stepsEqual(stepsAtThisPoint[i], stepsAtThisPoint[j])) {
+                            currentStep = step;
+                            drawAllGrids();
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            alert('No differences found - all loaded algorithms have identical execution');
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            // Only capture if an experiment is selected
+            if (currentExperimentIndex !== -1) {
+                if (event.key === 'ArrowRight') {
+                    event.preventDefault();
+                    nextStep();
+                } else if (event.key === 'ArrowLeft') {
+                    event.preventDefault();
+                    prevStep();
+                } else if (event.key === 'Enter') {
+                    event.preventDefault();
+                    findNextDifference();
+                }
+            }
+        });
+
+        // Parse URL parameters
+        // Supported parameters:
+        //   - experiment: Experiment ID to display (e.g., ?experiment=5)
+        //   - algorithms: Comma-separated algorithm indices (e.g., ?algorithms=0,2,5)
+        //   - page: Algorithm page number to display (e.g., ?page=2)
+        //   - perpage: Number of algorithms per page (e.g., ?perpage=20)
+        // Example: viewer.html?experiment=3&algorithms=0,1,2&page=1&perpage=20
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                experiment: params.get('experiment'),
+                algorithms: params.get('algorithms'),
+                page: params.get('page'),
+                perpage: params.get('perpage')
+            };
+        }
+
+        // Apply URL parameters
+        function applyUrlParams() {
+            const params = getUrlParams();
+            
+            // Apply algorithm filter if specified
+            if (params.algorithms) {
+                const algoIndices = params.algorithms.split(',').map(s => parseInt(s.trim()));
+                
+                // Clear current selection
+                selectedAlgos.clear();
+                
+                // Get sorted algorithm names (already sorted from backend)
+                if (window.commonData && window.commonData.algorithms) {
+                    const algoNames = window.commonData.algorithms.map(a => a[0]);
+                    
+                    // Select only specified algorithms by index
+                    algoIndices.forEach(idx => {
+                        if (idx >= 0 && idx < algoNames.length) {
+                            selectedAlgos.add(algoNames[idx]);
+                        }
+                    });
+                }
+                
+                // Update checkboxes
+                document.querySelectorAll('.algo-checkbox-item input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = selectedAlgos.has(checkbox.value);
+                });
+            }
+            
+            // Apply page parameter if specified
+            if (params.page !== null) {
+                const pageNum = parseInt(params.page);
+                if (!isNaN(pageNum) && pageNum >= 1) {
+                    currentAlgoPage = pageNum;
+                }
+            }
+            
+            // Apply perpage parameter if specified
+            if (params.perpage !== null) {
+                const perPage = parseInt(params.perpage);
+                if (!isNaN(perPage) && perPage >= 1 && perPage <= 200) {
+                    ALGOS_PER_PAGE = perPage;
+                    // Update both dropdowns
+                    const select1 = document.getElementById('algosPerPageSelect');
+                    const select2 = document.getElementById('algosPerPageSelect2');
+                    if (select1) select1.value = ALGOS_PER_PAGE;
+                    if (select2) select2.value = ALGOS_PER_PAGE;
+                }
+            }
+            
+            // Update page title if parameters are present
+            if (params.experiment !== null || params.algorithms !== null || params.page !== null || params.perpage !== null) {
+                let titleParts = [];
+                if (params.algorithms) {
+                    titleParts.push(`Algos ${params.algorithms}`);
+                }
+                if (params.experiment !== null) {
+                    titleParts.push(`Exp. ${params.experiment}`);
+                }
+                if (params.page !== null) {
+                    titleParts.push(`Page ${params.page}`);
+                }
+                if (titleParts.length > 0) {
+                    document.title = `Animation (${titleParts.join(' & ')}) — Execution ${params.experiment || '0'} viewer`;
+                }
+            }
+            
+            // Select experiment if specified, otherwise default to 0
+            const expIndex = params.experiment !== null ? parseInt(params.experiment) : 0;
+            if (window.commonData.experiments && window.commonData.experiments.length > 0) {
+                if (expIndex >= 0 && expIndex < window.commonData.experiments.length) {
+                    selectExperiment(expIndex);
+                    document.getElementById('experimentSelect').value = expIndex;
+                } else {
+                    selectExperiment(0);
+                    document.getElementById('experimentSelect').value = 0;
+                }
+            }
+        }
+
+        // Initialize
+        if (window.commonData) {
+            // Build sorted algorithm index from pre-sorted commonData
+            allAlgosSorted = window.commonData.algorithms.map((a, idx) => ({
+                name: a[0],
+                status: a[1],
+                sortedIdx: idx
+            }));
+            allAlgosSorted.forEach(a => {
+                algoNameToSortedIdx[a.name] = a.sortedIdx;
+            });
+            
+            populateFiltersMulti();
+            populateExperimentList();
+            applyUrlParams();
+        } else {
+            // Wait for common data to load if not ready
+            window.onload = () => {
+                allAlgosSorted = window.commonData.algorithms.map((a, idx) => ({
+                    name: a[0],
+                    status: a[1],
+                    sortedIdx: idx
+                }));
+                allAlgosSorted.forEach(a => {
+                    algoNameToSortedIdx[a.name] = a.sortedIdx;
+                });
+                
+                populateFiltersMulti();
+                populateExperimentList();
+                applyUrlParams();
+            };
+        }
+        
+
+    </script>
+</body>
+</html>

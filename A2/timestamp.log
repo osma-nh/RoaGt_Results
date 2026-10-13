@@ -1,0 +1,62 @@
+
+┌──────────────────────────────────────────────────────────────┐
+│                    🚀 EXECUTION STARTED                      │
+├──────────────────────────────────────────────────────────────┤
+│ Time      : 2026-10-09 14:55:33                              │
+└──────────────────────────────────────────────────────────────┘
+
+⏱ [(0.00088 sec)]  •  54 views generated in (0.00060 sec)
+⏱ [(0.00098 sec)]  •  567 rules successfully generated in (0.00004 sec)
+⏱ [(0.00223 sec)]  •  Views: 54 generated, Rules: 567 generated
+⏱ [(1.28061 sec)]  •  4266 parallel rules successfully generated in (1.27830 sec)
+⏱ [(1.28069 sec)]  •  Parallel rules validated in (0.00000 sec)
+⏱ [(1.36271 sec)]  •  After compressing by opacity: Views = 54, Rules = 567, Parallel Rules = 4266
+⏱ [(1.42520 sec)]  •  Simulated goal 1 with target 1 in (0.00435 sec) sec: found 1 execution paths
+⏱ [(1.42945 sec)]  •  Simulated goal 2 with target 1 in (0.00421 sec) sec: found 1 execution paths
+⏱ [(1.44714 sec)]  •  Simulated goal 3 with target 1 in (0.01765 sec) sec: found 23 execution paths
+⏱ [(1.45188 sec)]  •  Simulated goal 4 with target 1 in (0.00470 sec) sec: found 1 execution paths
+⏱ [(1.47436 sec)]  •  Simulated goal 5 with target 1 in (0.02245 sec) sec: found 8 execution paths
+⏱ [(1.59592 sec)]  •  Simulated goal 6 with target 1 in (0.12151 sec) sec: found 1134 execution paths
+⏱ [(1.61333 sec)]  •  Simulated goal 7 with target 1 in (0.01711 sec) sec: found 23 execution paths
+⏱ [(1.63251 sec)]  •  Simulated goal 8 with target 1 in (0.01911 sec) sec: found 8 execution paths
+⏱ [(1.63977 sec)]  •  Simulated goal 9 with target 1 in (0.00718 sec) sec: found 1 execution paths
+⏱ [(1.75763 sec)]  •  Simulated goal 10 with target 1 in (0.11781 sec) sec: found 1134 execution paths
+⏱ [(1.75795 sec)]  •  All goals simulated in (0.33710 sec) sec
+⏱ [(1.75861 sec)]  •  After goal 1 in (0.00001 sec): 1 global algos found!
+⏱ [(1.75867 sec)]  •  After goal 2 in (0.00007 sec): 1 global algos found!
+⏱ [(1.75916 sec)]  •  After goal 3 in (0.00055 sec): 15 global algos found!
+⏱ [(1.75967 sec)]  •  After goal 4 in (0.00107 sec): 15 global algos found!
+⏱ [(1.76245 sec)]  •  After goal 5 in (0.00384 sec): 8 global algos found!
+⏱ [(1.77207 sec)]  •  After goal 6 in (0.01345 sec): 3326 global algos found!
+⏱ [(1.80271 sec)]  •  After goal 7 in (0.04409 sec): 1573 global algos found!
+⏱ [(1.81250 sec)]  •  After goal 8 in (0.05388 sec): 668 global algos found!
+⏱ [(1.81688 sec)]  •  After goal 9 in (0.05826 sec): 668 global algos found!
+⏱ [(2.00487 sec)]  •  After goal 10 in (0.24626 sec): 8512 global algos found!
+⏱ [(2.00493 sec)]  •  combinaison in (0.24633 sec)
+⏱ [(2.00692 sec)]  •  17 levels found, activation levels: [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56]
+⏱ [(2.16375 sec)]  •  Act.40 done in (0.15677 sec) | ✓32 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(2.37176 sec)]  •  Act.41 done in (0.20792 sec) | ✓32 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(2.71719 sec)]  •  Act.42 done in (0.34532 sec) | ✓64 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(3.59236 sec)]  •  Act.43 done in (0.87494 sec) | ✓144 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(5.44991 sec)]  •  Act.44 done in (1.85577 sec) | ✓228 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(8.30470 sec)]  •  Act.45 done in (2.85432 sec) | ✓328 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(13.30202 sec)]  •  Act.46 done in (4.99646 sec) | ✓492 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(23.99834 sec)]  •  Act.47 done in (10.69520 sec) | ✓784 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(38.20405 sec)]  •  Act.48 done in (14.19875 sec) | ✓940 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(54.01844 sec)]  •  Act.49 done in (15.80856 sec) | ✓1056 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(1 min 12.5175 sec)]  •  Act.50 done in (18.49445 sec) | ✓1180 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(1 min 32.7831 sec)]  •  Act.51 done in (20.25836 sec) | ✓1216 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(1 min 50.0160 sec)]  •  Act.52 done in (17.23125 sec) | ✓1072 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(1 min 57.8272 sec)]  •  Act.53 done in (7.80482 sec) | ✓656 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(1 min 59.6821 sec)]  •  Act.54 done in (1.85356 sec) | ✓236 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(1 min 59.9811 sec)]  •  Act.55 done in (0.29841 sec) | ✓48 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(2 min 0.0286 sec)]  •  Act.56 done in (0.04725 sec) | ✓4 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+⏱ [(2 min 11.0651 sec)]  •  Done in (2 min 9.3065 sec) | ✓8512 VLD  ✓0 VNLD  ⊗0 blk  ⟲0 cyc  ✖0 col
+
+┌──────────────────────────────────────────────────────────────┐
+│                    🏁 EXECUTION COMPLETED                    │
+├──────────────────────────────────────────────────────────────┤
+│ End Time : 2026-10-09 14:57:44                               │
+│ Duration : (2 min 11.0809 sec)                               │
+└──────────────────────────────────────────────────────────────┘
+
